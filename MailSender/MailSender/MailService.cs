@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MailSender.Configuration;
@@ -20,20 +18,22 @@ namespace MailSender
 
         public MailService(ILogger<MailService> logger)
         {
-            _logger = logger;
+            _logger = logger;          
             _client = DiContainer.GetService<SmtpClientService>();
             _mailSenderService = DiContainer.GetService<MailSenderService>();
-            //_busControl = Bus.Factory.CreateUsingRabbitMq(config =>
-            //{
-            //    config.ReceiveEndpoint("mail-messages", e =>
-            //    {
-            //        e.Consumer<EventConsumer>();
-            //    });
-            //});
+            _busControl = Bus.Factory.CreateUsingRabbitMq(config =>
+            {
+                config.ReceiveEndpoint("mail-messages", e =>
+                {
+                    e.Consumer<EventConsumer>();
+                });
+            });
+
         }
 
         public override Task StartAsync(CancellationToken cancellationToken)
         {
+        
             _busControl.Start();
             return base.StartAsync(cancellationToken);
         }
@@ -49,7 +49,7 @@ namespace MailSender
             while (!stoppingToken.IsCancellationRequested)
             {
                 _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-                await Task.Delay(1000, stoppingToken);
+                await Task.Delay(5000, stoppingToken);
             }
         }
     }
